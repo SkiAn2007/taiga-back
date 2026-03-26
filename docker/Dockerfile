@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2021-present Kaleidos INC
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 LABEL maintainer="support@taiga.io"
 
 # Avoid prompting for configuration
@@ -29,7 +29,7 @@ RUN set -eux; \
         ca-certificates \
         gettext \
         gosu \
-        # libpq5 needed in runtime for psycopg2
+        # libpq5 needed in runtime for psycopg
         libpq5 \
         libpq-dev \
         git \
