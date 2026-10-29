@@ -18,7 +18,7 @@ backoff==1.6.0
     # via rudder-sdk-python
 billiard==4.2.3
     # via celery
-bleach==4.1.0
+bleach[css]==6.4.0
     # via -r requirements.in
 cachetools==6.2.2
     # via premailer
@@ -134,7 +134,6 @@ oauthlib[signedtoken]==3.3.1
     #   requests-oauthlib
 packaging==25.0
     # via
-    #   bleach
     #   gunicorn
     #   kombu
     #   lazy-loader
@@ -207,7 +206,6 @@ serpy==0.3.1
     # via -r requirements.in
 six==1.17.0
     # via
-    #   bleach
     #   django-pglocks
     #   html5lib
     #   python-dateutil
@@ -220,6 +218,7 @@ tifffile==2025.5.10
     # via scikit-image
 tinycss2==1.5.0
     # via
+    #   bleach
     #   cairosvg
     #   cssselect2
 typing-extensions==4.15.0

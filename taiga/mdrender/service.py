@@ -8,25 +8,11 @@
 from django.conf import settings
 
 import hashlib
+import re
 import functools
 import bleach
-
-# BEGIN PATCH
-import html5lib
-from html5lib.serializer import HTMLSerializer
-
-
-def _serialize(domtree):
-    walker = html5lib.treewalkers.getTreeWalker('etree')
-    stream = walker(domtree)
-    serializer = HTMLSerializer(quote_attr_values=True,
-                                omit_optional_tags=False,
-                                alphabetical_attributes=True)
-
-    return serializer.render(stream)
-
-bleach._serialize = _serialize
-# END PATCH
+from bleach.css_sanitizer import CSSSanitizer
+from bleach.sanitizer import Cleaner
 
 from django.core.cache import cache
 from django.utils.encoding import force_bytes
@@ -44,19 +30,36 @@ from .extensions.references import TaigaReferencesExtension
 from .extensions.target_link import TargetBlankLinkExtension
 from .extensions.refresh_attachment import RefreshAttachmentExtension
 
-# Bleach configuration
-bleach.ALLOWED_TAGS += ["p", "table", "thead", "tbody", "th", "tr", "td", "h1",
-                        "h2", "h3", "h4", "h5", "h6", "div", "pre", "span",
-                        "hr", "dl", "dt", "dd", "sup", "img", "del", "br",
-                        "ins", "input", "label"]
+# Bleach configuration (bleach >= 6 module constants are immutable, pass these to clean())
+ALLOWED_TAGS = set(bleach.ALLOWED_TAGS) | {"p", "table", "thead", "tbody", "th", "tr", "td", "h1",
+                                           "h2", "h3", "h4", "h5", "h6", "div", "pre", "span",
+                                           "hr", "dl", "dt", "dd", "sup", "img", "del", "br",
+                                           "ins", "input", "label"}
 
-bleach.ALLOWED_STYLES.append("background")
+ALLOWED_ATTRIBUTES = {
+    **bleach.ALLOWED_ATTRIBUTES,
+    "a": ["href", "title", "alt", "target"],
+    "img": ["alt", "src"],
+    "input": ["type", "checked"],
+    "*": ["class", "style", "id"],
+}
 
-bleach.ALLOWED_ATTRIBUTES["a"] = ["href", "title", "alt", "target"]
-bleach.ALLOWED_ATTRIBUTES["img"] = ["alt", "src"]
-bleach.ALLOWED_ATTRIBUTES["input"] = ["type", "checked"]
-bleach.ALLOWED_ATTRIBUTES["*"] = ["class", "style", "id"]
 
+class StrictCSSSanitizer(CSSSanitizer):
+    """bleach >= 6 only filters CSS property names; keep the value check of bleach 4.
+
+    A style containing anything outside plain words, numbers, colours and rgb(...) is
+    dropped as a whole, so url(...), expression(...) and quoted payloads never pass.
+    """
+    SAFE_STYLE = re.compile(r"""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'\s*|"[\s\w]+"|\([\d,\s]+\))*$""")
+
+    def sanitize_css(self, style):
+        if not self.SAFE_STYLE.match(style):
+            return ""
+        return super().sanitize_css(style)
+
+
+CSS_SANITIZER = StrictCSSSanitizer(allowed_css_properties=["background"])
 ALLOWED_PROTOCOLS = ["http", "https", "ftp", "mailto"]
 
 
@@ -117,6 +120,14 @@ def cache_by_sha(func):
     return _decorator
 
 
+def _clean(html):
+    cleaner = Cleaner(tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES,
+                      protocols=ALLOWED_PROTOCOLS, css_sanitizer=CSS_SANITIZER)
+    # keep the alphabetical attribute order of the output stored by earlier versions
+    cleaner.serializer.alphabetical_attributes = True
+    return cleaner.clean(html)
+
+
 def _get_markdown(project):
     extensions = _make_extensions_list(project=project)
     extension_configs = _make_extension_configs()
@@ -128,12 +139,12 @@ def _get_markdown(project):
 @cache_by_sha
 def render(project, text):
     md = _get_markdown(project)
-    return bleach.clean(md.convert(text), protocols=ALLOWED_PROTOCOLS)
+    return _clean(md.convert(text))
 
 
 def render_and_extract(project, text):
     md = _get_markdown(project)
-    result = bleach.clean(md.convert(text), protocols=ALLOWED_PROTOCOLS)
+    result = _clean(md.convert(text))
     return (result, md.extracted_data)
 
 
