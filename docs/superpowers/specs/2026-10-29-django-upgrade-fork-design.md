@@ -136,6 +136,8 @@ install it, so tests, CI and upgrade notes are part of the product.
   and the original `taiga-front` can log in and open a project.
 - A fresh install (empty database, `migrate` from zero) also works, since #232
   changed four historical migrations.
+  Compare `pg_dump --schema-only` of that database with one built by the
+  original code; differences must be explained (index names only).
 
 ## Open questions (owner)
 
@@ -153,3 +155,21 @@ install it, so tests, CI and upgrade notes are part of the product.
 - Require the upgrade-over-existing-database test as a release gate.
 - If a dependency has no release supporting Django 6.1 yet, hold it at the
   newest version that works and record it in the CHANGELOG instead of blocking.
+- Dependency updates are best effort and never block the release. A library
+  that cannot be moved stays on its newest working version, with the reason in
+  the CHANGELOG. A broken Kaleidos library is vendored in-tree as a stopgap so
+  work continues; the owner can still choose fork or replace later.
+- `bleach` 6: update the sanitizer in `mdrender` and add golden-file tests that
+  compare rendered HTML before and after; any difference is justified in the PR.
+- `asana`: upgrade to 4+/5.x only if the importer can be tested against a mocked
+  API; otherwise keep `asana<4` and document it. `rudder-sdk-python`: move to
+  2.x with a smoke test. `psd-tools`: move to the current release.
+- CI matrix: Python 3.12 to the newest version Django 6.1 supports, PostgreSQL
+  at Django 6.1's minimum and the newest stable (18, as in open PR #266).
+- Strip Kaleidos-specific image publishing and secrets-dependent CI jobs. README
+  and install URLs get placeholders until the fork host is known.
+- Plugins: verify and document compatibility; patch a plugin only if the fix is
+  trivial, and record it as a separate fork pin.
+- Keep #232's rewritten historical migrations, verified by the schema
+  comparison above.
+- The `taiga-front` login check is manual.
