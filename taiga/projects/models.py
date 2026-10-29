@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.utils.functional import cached_property
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from taiga.base.db.models.fields import JSONField
 

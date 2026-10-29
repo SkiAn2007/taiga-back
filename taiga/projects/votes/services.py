@@ -11,7 +11,7 @@ from django.db import transaction as tx
 from django.apps import apps
 from django.contrib.auth import get_user_model
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from .models import Votes, Vote
 

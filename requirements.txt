@@ -71,7 +71,6 @@ django==6.1.2
     #   -r requirements.in
     #   django-ipware
     #   django-jinja
-    #   django-pglocks
     #   django-pgware
     #   django-picklefield
     #   django-sampledatahelper
@@ -82,10 +81,8 @@ django-ipware==8.0.0
     # via -r requirements.in
 django-jinja==2.11.0
     # via -r requirements.in
-django-pglocks==2.1.0
-    # via -r requirements.in
 django-pgware==1.0.0
-    # via django-pglocks
+    # via -r requirements.in
 django-picklefield==3.4.0
     # via -r requirements.in
 django-sampledatahelper==0.5

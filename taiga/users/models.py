@@ -25,7 +25,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from taiga.base.db.models.fields import JSONField
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from taiga.base.utils.colors import generate_random_hex_color
 from taiga.base.utils.slug import slugify_uniquely

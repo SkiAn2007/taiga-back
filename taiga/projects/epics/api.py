@@ -25,7 +25,7 @@ from taiga.projects.occ import OCCResourceMixin
 from taiga.projects.tagging.api import TaggedResourceMixin
 from taiga.projects.votes.mixins.viewsets import VotedResourceMixin, VotersViewSetMixin
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from . import models
 from . import permissions

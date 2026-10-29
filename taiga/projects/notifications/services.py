@@ -32,7 +32,7 @@ from taiga.projects.history.services import (make_key_from_model_object,
 from taiga.permissions.services import user_has_perm
 from taiga.events import events
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from .models import HistoryChangeNotification, Watched
 from .squashing import squash_history_entries

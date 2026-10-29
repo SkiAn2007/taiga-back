@@ -10,7 +10,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from taiga.base.utils.slug import slugify_uniquely_for_queryset
 from taiga.base.utils.time import timestamp_ms

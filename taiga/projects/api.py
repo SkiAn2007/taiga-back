@@ -16,7 +16,7 @@ from django.http import Http404
 from django.utils.translation import gettext as _
 from django.utils import timezone
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from taiga.base import filters
 from taiga.base import exceptions as exc

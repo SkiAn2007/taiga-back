@@ -5,7 +5,7 @@
 #
 # Copyright (c) 2021-present Kaleidos INC
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 
 def detail_route(methods=['get'], **kwargs):

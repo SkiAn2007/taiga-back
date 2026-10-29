@@ -32,7 +32,7 @@ from . import models
 from . import permissions
 from . import utils as milestones_utils
 
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 import datetime
 
 

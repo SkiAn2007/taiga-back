@@ -28,7 +28,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.apps import apps
 from django.db import transaction as tx
-from django_pglocks import advisory_lock
+from django_pg_utils import advisory_lock
 
 from taiga.mdrender.service import render as mdrender
 from taiga.base.utils.db import get_typename_for_model_class

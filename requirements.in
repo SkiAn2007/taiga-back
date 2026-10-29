@@ -17,7 +17,7 @@ diff-match-patch
 django-ipware>7
 django-jinja
 django-picklefield>=3.3.0 # >=3.3.0 required; older versions only supported Django 3.2
-django-pglocks
+django-pgware
 easy-thumbnails>=2.10 # 2.10+ required for Django 5.x support (2.9 still used removed get_storage_class)
 netaddr
 premailer>=3.10
