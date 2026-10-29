@@ -1,8 +1,27 @@
 ## Taiga Backend
 
 [![Managed with Taiga.io](https://img.shields.io/badge/managed%20with-TAIGA.io-709f14.svg)](https://tree.taiga.io/project/taiga/ "Managed with Taiga.io")
-[![Tests Status](https://github.com/taigaio/taiga-back/workflows/Taiga%20Back%20-%20Test%20and%20Coverage/badge.svg?branch=main)](https://github.com/taigaio/taiga-back/actions?query=workflow%3A%22Taiga+Back+-+Test+and+Coverage%22 "Tests Status")
-[![Coverage Status](https://img.shields.io/coveralls/taigaio/taiga-back/main.svg)](https://coveralls.io/r/taigaio/taiga-back?branch=main "Coverage Status")
+[![Tests Status](https://github.com/SkiAn2007/taiga-back/actions/workflows/tests-and-coverall.yml/badge.svg)](https://github.com/SkiAn2007/taiga-back/actions/workflows/tests-and-coverall.yml "Tests Status")
+
+## About this fork
+This fork of [taigaio/taiga-back](https://github.com/taigaio/taiga-back) runs on **Django 6.1**, Python 3.12+ and PostgreSQL 15+
+with current dependencies. It is a research fork built on upstream pull request 232, not an official Taiga release.
+The HTTP API stays compatible with the original `taiga-front`.
+
+### Upgrading from upstream Taiga 6.x
+Your existing database is upgraded in place; no export/import is needed.
+
+1. **Back up the database** (`pg_dump -Fc`) and stop the old backend.
+2. Make sure PostgreSQL is version 15 or newer and the host runs Python 3.12+ (the Docker image already does).
+3. Replace the backend code or image with this fork and install `requirements.txt` (`psycopg` needs `libpq`; use `psycopg[binary]` if it is not installed).
+4. Run `python manage.py migrate`. It renames six indexes (attachments, projects, custom attributes) and changes nothing else.
+5. Start the new backend and check it against your front end. To roll back, restore the backup and start the old backend.
+
+Try it on a copy first: restore your dump into a second database and start a second instance from the fork's Docker image
+(`docker build -f docker/Dockerfile -t taiga-back-django6 .`) against it before touching the live one.
+
+The `upgrade-check` CI job does this automatically with a database created by the original code
+(`scripts/upgrade-check/build_reference_db.sh` and `run_upgrade_check.sh`): row counts, index identity and schema are compared.
 
 ## Documentation
 

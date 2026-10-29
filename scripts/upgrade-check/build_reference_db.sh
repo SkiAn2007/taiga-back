@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # Build a Taiga 6.x reference database with the ORIGINAL upstream code
-# (ORIG_REF, default "main" = the commit before the fork's changes) and sample_data.
+# (ORIG_REF, default "main"; CI pins the upstream commit the fork started from) and sample_data.
 #
 # Usage: build_reference_db.sh <out_dir>
 # Writes: <out_dir>/reference.dump, reference.schema.sql, rowcounts.tsv

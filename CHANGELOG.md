@@ -8,11 +8,27 @@
 - Fix: Correct PostgreSQL version detection in migrations using proper cursor methods
 - Fix: Simplify complex database migration by replacing raw SQL with bulk_update as its broken on new Postgres versions
 - Upgrade: psycopg to v3 for improved PostgreSQL compatibility
-- Chore: Update minimum Python requirement to 3.10+ (Django 6 requirement)
-- Chore: Update minimum PostgreSQL requirement to 12+ (Django 6 requirement)
+- Chore: Update minimum Python requirement to 3.12 and PostgreSQL to 15 (Django 6.1 requirements)
 - CI: Upgrade GitHub Actions (checkout@v4, setup-python@v5) and Upgrade Python test version from 3.10 to 3.12
 - Chore: Update tox configuration
 - Chore: Multiple dependency updates and security fixes
+- Upgrade: Django 6.1 (was 6.0 in the first upgrade commits, 3.2 upstream)
+- Fix: `CustomAdminEmailHandler` no longer passes `fail_silently` to `send_mail()` (Django 6.1 raises `TypeError` when it is combined with a connection)
+- Upgrade: bleach 6 with `bleach[css]`. Output is pinned by golden files; styles are still dropped as a whole unless they are plain words, numbers or `rgb()` (bleach 6 only filters property names)
+- Upgrade: rudder-sdk-python 2 (module is now `rudderstack.analytics`, `dataPlaneUrl`), psd-tools 1.26, django-pgware (replaces django-pglocks), Pygments 2.21 (code blocks no longer HTML-escape quotes), and all other pins
+- Chore: Contrib plugins pinned to tag 6.10.0 (6.10.2 never existed)
+- Migrations: `index_together` replaced by `Meta.indexes`; new migrations `attachments 0009`, `projects 0069`, `custom_attributes 0016` rename the existing indexes in place (no rebuild)
+- CI: Python 3.12-3.14 x PostgreSQL 15/17/18 and an `upgrade-check` job (see README)
+
+### Held back dependencies
+- `asana<4`: the Asana importer is written against the v3 client; SDK v4/v5 is a rewrite that cannot be verified without a live Asana account
+- `cssutils<2.15`: 2.15 requires `encutils` 1.0.0, whose only release ships no module (`ModuleNotFoundError` when `premailer` imports `cssutils`)
+- `EMAIL_BACKEND` / `EMAIL_*` settings are still used (deprecated in Django 6.1, removal in Django 2028); migrate to `MAILERS` later
+
+### Behaviour differences for fresh installs
+Databases created by the original code keep their serial primary keys and the nullable columns of `history_historyentry`.
+Fresh databases of this fork get IDENTITY primary keys (Django 4.1+) and the NOT NULL columns the models declare.
+Both work. Upgrading an existing database changes nothing but the six index names.
 
 ## 6.10.2 (2026-07-02)
 - fix: enforce permission check on create_default due date endpoints
