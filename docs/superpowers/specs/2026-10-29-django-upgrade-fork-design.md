@@ -130,8 +130,9 @@ install it, so tests, CI and upgrade notes are part of the product.
 
 - Full test suite passes in CI on the new matrix.
 - `manage.py makemigrations --check --dry-run` reports no changes.
-- **Upgrade test:** restore a dump of a real Taiga 6.x database into PostgreSQL,
-  run `manage.py migrate`, then confirm row counts of the main tables are
+- **Upgrade test (automated):** build a Taiga 6.x database by running the
+  original upstream code with `manage.py sample_data` (the owner's live data is
+  small and not shared), run the fork's `manage.py migrate` over it, then confirm row counts of the main tables are
   unchanged, the schema diff against the original is limited to index renames,
   and the original `taiga-front` can log in and open a project.
 - A fresh install (empty database, `migrate` from zero) also works, since #232
@@ -139,11 +140,17 @@ install it, so tests, CI and upgrade notes are part of the product.
   Compare `pg_dump --schema-only` of that database with one built by the
   original code; differences must be explained (index names only).
 
+## Owner's own check
+
+The owner runs a live Taiga in Docker with a separate database. After
+development the owner starts a **second instance** from the fork's Docker image
+against a copy of that database and checks by hand that the project behaves as
+before. The builder's job is to make that image buildable and the upgrade steps
+clear in the README; the builder never touches the live instance or its data.
+
 ## Open questions (owner)
 
 - Fork name and where it is hosted (GitHub account/org, repository name).
-- Which database dump is available for the upgrade test, and does it need
-  anonymizing before it is used.
 - Policy for broken Kaleidos libraries (fork, replace, vendor); decided per
   library once the evidence is in.
 
