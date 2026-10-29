@@ -1,5 +1,5 @@
 # Main
-Django>=6,<6.1
+Django>=6.1,<6.2
 celery
 gunicorn
 psycopg>=3.3.3
