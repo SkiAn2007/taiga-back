@@ -15,7 +15,11 @@ Your existing database is upgraded in place; no export/import is needed.
 2. Make sure PostgreSQL is version 15 or newer and the host runs Python 3.12+ (the Docker image already does).
 3. Replace the backend code or image with this fork and install `requirements.txt` (`psycopg` needs `libpq`; use `psycopg[binary]` if it is not installed).
 4. Run `python manage.py migrate`. It renames six indexes (attachments, projects, custom attributes) and changes nothing else.
-5. Start the new backend and check it against your front end. To roll back, restore the backup and start the old backend.
+5. **Check your own `config.py`.** Django 5.1 removed `DEFAULT_FILE_STORAGE`, `STATICFILES_STORAGE` and `THUMBNAIL_DEFAULT_STORAGE`;
+   they are now ignored without any warning. Move them into `STORAGES` (see `docker/config.py`:
+   `"default"` and `"easy_thumbnails"` use `taiga_contrib_protected.storage.ProtectedFileSystemStorage`). Otherwise media URLs lose their
+   signed token, and custom storages such as S3 are silently replaced by the local filesystem.
+6. Start the new backend and check it against your front end. To roll back, restore the backup and start the old backend.
 
 Try it on a copy first: restore your dump into a second database and start a second instance from the fork's Docker image
 (`docker build -f docker/Dockerfile -t taiga-back-django6 .`) against it before touching the live one.

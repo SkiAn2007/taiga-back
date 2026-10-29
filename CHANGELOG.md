@@ -18,6 +18,11 @@
 - Upgrade: rudder-sdk-python 2 (module is now `rudderstack.analytics`, `dataPlaneUrl`), psd-tools 1.26, django-pgware (replaces django-pglocks), Pygments 2.21 (code blocks no longer HTML-escape quotes), and all other pins
 - Chore: Contrib plugins pinned to tag 6.10.0 (6.10.2 never existed)
 - Migrations: `index_together` replaced by `Meta.indexes`; new migrations `attachments 0009`, `projects 0069`, `custom_attributes 0016` rename the existing indexes in place (no rebuild)
+- Fix: bulk reordering of statuses, points, priorities, severities, issue types, epic statuses and swimlanes only touches rows of the given project again (PR 232 had dropped the `project_id` condition of the original SQL)
+- Fix: `docker/config.py` and `settings/config.py.prod.example` use `STORAGES` (Django 5.1 removed `DEFAULT_FILE_STORAGE`/`THUMBNAIL_DEFAULT_STORAGE`, which were silently ignored); user configs need the same change, see README
+- Fix: Markdown inline styles are sanitised exactly like bleach 4 (`rgba()`/`hsl()` kept, `url()` dropped)
+- Fix: `requirements-devel.txt` recompiled; it conflicted with `requirements.txt` (`certifi`)
+- Advisory lock ids differ between django-pglocks and django-pgware: stop all old workers before starting new ones when upgrading
 - CI: Python 3.12-3.14 x PostgreSQL 15/17/18 and an `upgrade-check` job (see README)
 
 ### Held back dependencies

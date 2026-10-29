@@ -12,6 +12,7 @@ import re
 import functools
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
+from bleach.html5lib_shim import convert_entities
 from bleach.sanitizer import Cleaner
 
 from django.core.cache import cache
@@ -46,17 +47,34 @@ ALLOWED_ATTRIBUTES = {
 
 
 class StrictCSSSanitizer(CSSSanitizer):
-    """bleach >= 6 only filters CSS property names; keep the value check of bleach 4.
+    """The sanitize_css() of bleach 4.1.0 on top of bleach 6's CSSSanitizer.
 
-    A style containing anything outside plain words, numbers, colours and rgb(...) is
-    dropped as a whole, so url(...), expression(...) and quoted payloads never pass.
+    bleach >= 6 only filters CSS property names. bleach 4 also dropped url(...) values and discarded
+    a whole style that contained anything but plain words, numbers, colours and rgb()/hsl()-like
+    parentheses, so url(), expression() and quoted payloads never pass. Kept identical for parity.
     """
-    SAFE_STYLE = re.compile(r"""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'\s*|"[\s\w]+"|\([\d,\s]+\))*$""")
+    GAUNTLET = re.compile(
+        r"""^(  # consider a style attribute value as composed of:
+[/:,#%!.\s\w]    # a non-newline character
+|\w-\w           # 3 characters in the form \w-\w
+|'[\s\w]+'\s*    # a single quoted string of [\s\w]+ with trailing space
+|"[\s\w]+"       # a double quoted string of [\s\w]+
+|\([\d,%\.\s]+\) # a parenthesized string of digits, commas, periods, percent signs, whitespace
+)*$""", flags=re.U | re.VERBOSE)
 
     def sanitize_css(self, style):
-        if not self.SAFE_STYLE.match(style):
+        style = convert_entities(style)
+        style = re.compile(r"url\s*\(\s*[^\s)]+?\s*\)\s*").sub(" ", style)
+        if not all(self.GAUNTLET.match(part) for part in style.split(";")):
             return ""
-        return super().sanitize_css(style)
+        if not re.match(r"^\s*([-\w]+\s*:[^:;]*(;\s*|$))*$", style):
+            return ""
+        clean = []
+        for prop, value in re.findall(r"([-\w]+)\s*:\s*([^:;]*)", style):
+            if value and (prop.lower() in self.allowed_css_properties
+                          or prop.lower() in self.allowed_svg_properties):
+                clean.append(prop + ": " + value + ";")
+        return " ".join(clean)
 
 
 CSS_SANITIZER = StrictCSSSanitizer(allowed_css_properties=["background"])

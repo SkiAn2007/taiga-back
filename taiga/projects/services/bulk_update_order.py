@@ -6,7 +6,6 @@
 # Copyright (c) 2021-present Kaleidos INC
 
 from contextlib import suppress
-from operator import itemgetter
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -89,61 +88,63 @@ def update_projects_order_in_bulk(bulk_data: list, field: str, user):
     db.update_attr_in_bulk_for_ids(memberships_orders, field, model=models.Membership)
 
 
+def _bulk_update_order(model, project, data):
+    """Set `order` for the (id, order) pairs of `data` that belong to `project`.
+
+    The original raw SQL had `AND project_id = ...`; keep that scope so a project admin cannot
+    reorder rows of other projects by sending their ids. Returns the ids that were updated.
+    """
+    orders = dict(data)
+    ids = tuple(model.objects.filter(project=project, id__in=list(orders)).values_list("id", flat=True))
+    model.objects.bulk_update([model(id=id, order=orders[id]) for id in ids], ["order"])
+    return ids
+
+
 @transaction.atomic
 def bulk_update_epic_status_order(project, user, data):
-    updates = [models.EpicStatus(id=id, order=order) for id, order in data]
-    models.EpicStatus.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.EpicStatus, project, data)
 
 
 @transaction.atomic
 def bulk_update_userstory_status_order(project, user, data):
-    updates = [models.UserStoryStatus(id=id, order=order) for id, order in data]
-    models.UserStoryStatus.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.UserStoryStatus, project, data)
 
 
 @transaction.atomic
 def bulk_update_points_order(project, user, data):
-    updates = [models.Points(id=id, order=order) for id, order in data]
-    models.Points.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.Points, project, data)
 
 
 @transaction.atomic
 def bulk_update_task_status_order(project, user, data):
-    updates = [models.TaskStatus(id=id, order=order) for id, order in data]
-    models.TaskStatus.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.TaskStatus, project, data)
 
 
 @transaction.atomic
 def bulk_update_issue_status_order(project, user, data):
-    updates = [models.IssueStatus(id=id, order=order) for id, order in data]
-    models.IssueStatus.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.IssueStatus, project, data)
 
 
 @transaction.atomic
 def bulk_update_issue_type_order(project, user, data):
-    updates = [models.IssueType(id=id, order=order) for id, order in data]
-    models.IssueType.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.IssueType, project, data)
 
 
 @transaction.atomic
 def bulk_update_priority_order(project, user, data):
-    updates = [models.Priority(id=id, order=order) for id, order in data]
-    models.Priority.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.Priority, project, data)
 
 
 @transaction.atomic
 def bulk_update_severity_order(project, user, data):
-    updates = [models.Severity(id=id, order=order) for id, order in data]
-    models.Severity.objects.bulk_update(updates, ['order'])
+    _bulk_update_order(models.Severity, project, data)
 
 
 @transaction.atomic
 def bulk_update_swimlane_order(project, user, data):
-    updates = [models.Swimlane(id=id, order=order) for id, order in data]
-    models.Swimlane.objects.bulk_update(updates, ['order'])
+    swimlane_ids = _bulk_update_order(models.Swimlane, project, data)
 
     # Send event related to swimlane changes
-    swimlane_ids = tuple(map(itemgetter(0), data))
     events.emit_event_for_ids(ids=swimlane_ids,
                               content_type="projects.swimlane",
                               projectid=project.pk)

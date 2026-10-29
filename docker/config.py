@@ -55,8 +55,13 @@ DEFAULT_PROJECT_SLUG_PREFIX = os.getenv('DEFAULT_PROJECT_SLUG_PREFIX', 'False') 
 ## MEDIA
 #########################################
 MEDIA_URL = f"{ TAIGA_URL }/media/"
-DEFAULT_FILE_STORAGE = "taiga_contrib_protected.storage.ProtectedFileSystemStorage"
-THUMBNAIL_DEFAULT_STORAGE = DEFAULT_FILE_STORAGE
+# Media goes through taiga-protected (signed URLs). DEFAULT_FILE_STORAGE and
+# THUMBNAIL_DEFAULT_STORAGE were removed in Django 5.1 and are ignored without a warning.
+STORAGES = {
+    **STORAGES,
+    "default": {"BACKEND": "taiga_contrib_protected.storage.ProtectedFileSystemStorage"},
+    "easy_thumbnails": {"BACKEND": "taiga_contrib_protected.storage.ProtectedFileSystemStorage"},
+}
 
 STATIC_URL = f"{ TAIGA_URL }/static/"
 
