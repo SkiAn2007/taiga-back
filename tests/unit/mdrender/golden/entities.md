@@ -1,0 +1,1 @@
+&lt;script&gt;alert(1)&lt;/script&gt; &amp; &copy; 1 < 2 > 0
