@@ -17,7 +17,8 @@ install it, so tests, CI and upgrade notes are part of the product.
 
 ## Goals
 
-1. Run on Django 6.0 and Python 3.12+ with all tests green in CI.
+1. Run on **Django 6.1** and the Python versions it supports (3.12+) with all
+   tests green in CI.
 2. **Upgrade in place over an existing Taiga 6.x database.** A person with a
    working original `taiga-back` replaces the backend, runs migrations, and
    keeps all data. This is the most important requirement.
@@ -32,7 +33,7 @@ install it, so tests, CI and upgrade notes are part of the product.
 
 - New Taiga features or behaviour changes.
 - Django 5.2 LTS support as a separate target (superseded by the decision below).
-- Supporting Python or PostgreSQL versions that Django 6.0 itself drops.
+- Supporting Python or PostgreSQL versions that Django 6.1 itself drops.
 - Rewriting working code for style.
 
 ## Anti-goals (a failure even if the tests pass)
@@ -46,12 +47,13 @@ install it, so tests, CI and upgrade notes are part of the product.
 ## Decisions made by the owner
 
 - Base the fork on **upstream PR #232** ("Upgrade Django to 6 and refactor
-  dependencies and tests"), which brings Django 6.0, `psycopg` 3, Python 3.12,
+  dependencies and tests"), which brings Django 6.0 (pinned `>=6,<6.1`), `psycopg` 3, Python 3.12,
   the `STORAGES` setting, `iterator(chunk_size=...)`, replacement of
   `django.utils.baseconv`, `datetime.timezone.utc` and a CI update.
   This overrides two earlier statements in the conversation: the 5.2 LTS target
   and the deferral of psycopg3. Both now ride along with #232 as is.
-- On top of #232: add the `index_together` -> `Meta.indexes` replacement with its
+- On top of #232: raise Django from 6.0 to **6.1** (the owner's addition after
+  the first draft), add the `index_together` -> `Meta.indexes` replacement with its
   migration, and update all dependencies.
 - The result is published as a public fork.
 
@@ -96,8 +98,8 @@ install it, so tests, CI and upgrade notes are part of the product.
 
 - Licence is MPL-2.0 with a DCO sign-off requirement (`DCOLICENSE`); the fork
   keeps both and keeps the file headers.
-- Django 6.0 requires Python 3.12+ and a newer PostgreSQL minimum than 13; the
-  builder confirms exact minimums from the Django 6.0 release notes before
+- Django 6.1 requires Python 3.12+ and a newer PostgreSQL minimum than 13; the
+  builder confirms exact minimums from the Django 6.1 release notes before
   writing them into docs and CI. (The #232 description says Python 3.10+ and
   PostgreSQL 12+, which looks wrong.)
 
@@ -106,19 +108,22 @@ install it, so tests, CI and upgrade notes are part of the product.
 1. Create the working branch from current upstream `main` containing the #232
    commits, resolving the `docker/Dockerfile` conflict. Rebase versus merge is
    the builder's call.
-2. Finish the `index_together` removal. For every affected model, produce a
+2. Bump Django to 6.1: change the pin, run the suite with
+   `-W error::DeprecationWarning`, and fix everything removed or deprecated
+   between 6.0 and 6.1 (release notes are the source).
+3. Finish the `index_together` removal. For every affected model, produce a
    migration that **renames** the existing database index
    (`RenameIndex(..., old_fields=...)`) instead of dropping and recreating it,
    then confirm `makemigrations --check` is clean.
-3. Fix `NullBooleanField` in `taiga/base/api/serializers.py` and other leftovers
+4. Fix `NullBooleanField` in `taiga/base/api/serializers.py` and other leftovers
    found by running the app on Django 6.
-4. Update dependencies and handle the code changes that come with them
+5. Update dependencies and handle the code changes that come with them
    (bleach 6 in `mdrender`, asana importer, rudder SDK, psd-tools).
-5. For each Kaleidos library that fails on Django 6, report the failure with
+6. For each Kaleidos library that fails on Django 6, report the failure with
    evidence and propose fork, replace or vendor. The owner decides per library
    (see open questions).
-6. Fix the plugin requirement pins and check the plugins against Django 6.
-7. Update CI (Python, PostgreSQL versions), the Docker image, README and
+7. Fix the plugin requirement pins and check the plugins against Django 6.1.
+8. Update CI (Python, PostgreSQL versions), the Docker image, README and
    CHANGELOG with an upgrade section.
 
 ## Acceptance checks
@@ -146,3 +151,5 @@ install it, so tests, CI and upgrade notes are part of the product.
 - Pin plugins to `6.10.0`, the newest existing tag.
 - Treat `django-sampledatahelper` as dev-only: do not let it block the release.
 - Require the upgrade-over-existing-database test as a release gate.
+- If a dependency has no release supporting Django 6.1 yet, hold it at the
+  newest version that works and record it in the CHANGELOG instead of blocking.
