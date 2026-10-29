@@ -11,6 +11,7 @@ from unittest import mock
 
 import pytest
 from django.conf import settings
+from django.core.signing import b62_encode
 from django.core import mail, signing
 from django.core.files import File
 from django.urls import reverse
@@ -39,26 +40,10 @@ class ExpiredSigner(signing.TimestampSigner):
         super().__init__(*args, **kwargs)
         self.salt = "django.core.signing.TimestampSigner"
 
-    """
-    Matches django private internal code take from
-    django.core.signing.b62_encode
-    """
-    def b62_encode(self, s):
-        BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        if s == 0:
-            return "0"
-        sign = "-" if s < 0 else ""
-        s = abs(s)
-        encoded = ""
-        while s > 0:
-            s, remainder = divmod(s, 62)
-            encoded = BASE62_ALPHABET[remainder] + encoded
-        return sign + encoded
-
     def timestamp(self):
         import time
         time_in_the_far_past = int(time.time()) - 24*60*60*1000
-        return self.b62_encode(time_in_the_far_past)
+        return b62_encode(time_in_the_far_past)
 
 
 def test_get_project_detail(client):

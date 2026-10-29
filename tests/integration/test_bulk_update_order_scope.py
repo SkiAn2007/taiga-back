@@ -38,3 +38,14 @@ def test_bulk_update_order_only_touches_rows_of_the_given_project(update_order, 
     own.refresh_from_db()
     foreign.refresh_from_db()
     assert (own.order, foreign.order) == (7, 1)
+
+
+def test_bulk_update_order_accepts_ids_sent_as_strings():
+    # the endpoints pass the request JSON through; the original SQL accepted '5' as an id
+    project = f.ProjectFactory.create()
+    status = f.UserStoryStatusFactory.create(project=project, order=1)
+
+    services.bulk_update_userstory_status_order(project, project.owner, [(str(status.id), 7)])
+
+    status.refresh_from_db()
+    assert status.order == 7

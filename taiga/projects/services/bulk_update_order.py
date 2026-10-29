@@ -10,6 +10,7 @@ from contextlib import suppress
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 
+from taiga.base.utils import db
 from taiga.events import events
 from taiga.projects import models
 from taiga.projects.userstories.models import UserStory
@@ -94,9 +95,9 @@ def _bulk_update_order(model, project, data):
     The original raw SQL had `AND project_id = ...`; keep that scope so a project admin cannot
     reorder rows of other projects by sending their ids. Returns the ids that were updated.
     """
-    orders = dict(data)
+    orders = {int(id): order for id, order in data}
     ids = tuple(model.objects.filter(project=project, id__in=list(orders)).values_list("id", flat=True))
-    model.objects.bulk_update([model(id=id, order=orders[id]) for id in ids], ["order"])
+    model.objects.bulk_update([model(id=id, order=orders[id]) for id in ids], ["order"], batch_size=db.BULK_UPDATE_BATCH_SIZE)
     return ids
 
 
@@ -192,4 +193,4 @@ def update_order_and_swimlane(swimlane_to_be_deleted, move_to_swimlane):
         UserStory(id=uss_id, kanban_order=new_order, swimlane_id=swimlane_id)
         for swimlane_id, uss_id, new_order in data
     ]
-    UserStory.objects.bulk_update(updates, ['kanban_order', 'swimlane_id'])
+    UserStory.objects.bulk_update(updates, ['kanban_order', 'swimlane_id'], batch_size=db.BULK_UPDATE_BATCH_SIZE)

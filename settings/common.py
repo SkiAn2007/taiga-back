@@ -82,7 +82,6 @@ LOGIN_URL = "/auth/login/"
 USE_TZ = True
 
 USE_I18N = True
-USE_L10N = True
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'

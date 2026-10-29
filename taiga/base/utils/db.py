@@ -15,6 +15,9 @@ from . import functions
 
 import re
 
+# bulk_update() builds one CASE WHEN per row; its cost grows far faster than the row count
+BULK_UPDATE_BATCH_SIZE = 500
+
 
 def get_object_or_none(klass, *args, **kwargs):
     """

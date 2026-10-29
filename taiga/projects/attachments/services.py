@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, urldefrag
 from django.apps import apps
 from django.conf import settings
 
+from taiga.base.utils import db
 from taiga.base.utils.thumbnails import get_thumbnail, get_thumbnail_url
 
 from . import models
@@ -136,7 +137,7 @@ def update_order_in_bulk(item: Union["Epic", "UserStory", "Task", "Issue", "Wiki
         item.attachments.model(id=att_id, order=new_order)
         for att_id, new_order in data
     ]
-    item.attachments.model.objects.bulk_update(updates, ['order'])
+    item.attachments.model.objects.bulk_update(updates, ['order'], batch_size=db.BULK_UPDATE_BATCH_SIZE)
 
     # Generate response with modified info
     res = ({

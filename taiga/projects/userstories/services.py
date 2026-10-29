@@ -129,7 +129,7 @@ def reset_userstories_kanban_order_in_bulk(
     data = [(id, base_order + index) for index, id in enumerate(bulk_userstories)]
 
     updates = [models.UserStory(id=id, kanban_order=kanban_order) for id, kanban_order in data]
-    models.UserStory.objects.bulk_update(updates, ['kanban_order'])
+    models.UserStory.objects.bulk_update(updates, ['kanban_order'], batch_size=db.BULK_UPDATE_BATCH_SIZE)
 
     ## Sent events of updated stories
     events.emit_event_for_ids(
@@ -215,7 +215,7 @@ def update_userstories_backlog_or_sprint_order_in_bulk(
 
     # execute query for update milestone and backlog or sprint order
     updates = [models.UserStory(id=id, **{order_param: order}) for id, order in data]
-    models.UserStory.objects.bulk_update(updates, [order_param])
+    models.UserStory.objects.bulk_update(updates, [order_param], batch_size=db.BULK_UPDATE_BATCH_SIZE)
 
     # execute query for update milestone for user stories and its tasks
     bulk_userstories_objects = project.user_stories.filter(id__in=bulk_userstories)
@@ -335,7 +335,7 @@ def update_userstories_kanban_order_in_bulk(
 
     # execute query for update kanban_order
     updates = [models.UserStory(id=id, kanban_order=kanban_order) for id, kanban_order in data]
-    models.UserStory.objects.bulk_update(updates, ['kanban_order'])
+    models.UserStory.objects.bulk_update(updates, ['kanban_order'], batch_size=db.BULK_UPDATE_BATCH_SIZE)
 
     # execute query for update status, swimlane and kanban_order
     bulk_userstories_objects = project.user_stories.filter(id__in=bulk_userstories)

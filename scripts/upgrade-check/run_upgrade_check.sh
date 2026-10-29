@@ -31,8 +31,7 @@ dump_schema() { docker exec "$PG" pg_dump -U taiga -d "$1" --schema-only --no-ow
 
 docker rm -f "$PG" >/dev/null 2>&1 || true
 docker run -d --name "$PG" -p "$PORT:5432" -e POSTGRES_USER=taiga -e POSTGRES_PASSWORD=taiga -e POSTGRES_DB=taiga "$PG_IMAGE" >/dev/null
-until docker exec "$PG" pg_isready -U taiga -d taiga >/dev/null 2>&1; do sleep 1; done
-sleep 2
+until docker exec "$PG" pg_isready -h 127.0.0.1 -U taiga -d taiga >/dev/null 2>&1; do sleep 1; done
 
 echo "== upgrade over the reference database"
 docker exec -i "$PG" pg_restore -U taiga -d taiga --no-owner < "$REF/reference.dump"

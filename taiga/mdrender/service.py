@@ -77,7 +77,7 @@ class StrictCSSSanitizer(CSSSanitizer):
         return " ".join(clean)
 
 
-CSS_SANITIZER = StrictCSSSanitizer(allowed_css_properties=["background"])
+CSS_SANITIZER = StrictCSSSanitizer(allowed_css_properties=["background"], allowed_svg_properties=[])
 ALLOWED_PROTOCOLS = ["http", "https", "ftp", "mailto"]
 
 

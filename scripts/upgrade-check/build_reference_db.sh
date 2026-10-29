@@ -32,7 +32,7 @@ docker build -q -f "$SRC/docker/Dockerfile" -t "$IMG" "$SRC" >/dev/null
 docker network create "$NET" >/dev/null
 docker run -d --name "$PG" --network "$NET" \
     -e POSTGRES_DB=taiga -e POSTGRES_USER=taiga -e POSTGRES_PASSWORD=taiga "$PG_IMAGE" >/dev/null
-until docker exec "$PG" pg_isready -U taiga -d taiga >/dev/null 2>&1; do sleep 1; done
+until docker exec "$PG" pg_isready -h 127.0.0.1 -U taiga -d taiga >/dev/null 2>&1; do sleep 1; done
 
 taiga() {
     docker run --rm --network "$NET" --entrypoint python \
